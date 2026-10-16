@@ -1,0 +1,13 @@
+timestamp,level,source,message
+2026-10-06T10:00:00+00:00,INFO,api,Service started
+2026-10-06T10:00:05+00:00,DEBUG,api,Health check passed
+2026-10-06T10:01:00+00:00,WARNING,db,Slow query: 1200ms
+2026-10-06T10:02:00+00:00,ERROR,db,Connection timeout
+2026-10-06T10:03:00+00:00,CRITICAL,auth,Token service unavailable
+2026-10-06T10:04:00+00:00,INFO,web,Request GET /users 200
+2026-10-06T10:05:00+00:00,ERROR,web,Unhandled exception: ValueError
+2026-10-06T10:06:00+00:00,INFO,worker,"Задача завершена, пользователь Иван"
+2026-10-06T10:07:00+00:00,WARNING,db,Replication lag 5s
+2026-10-06T10:08:00+00:00,ERROR,api,Rate limit exceeded
+2026-10-06T10:09:00+00:00,DEBUG,worker,Queue size 0
+2026-10-06T10:10:00+00:00,CRITICAL,db,Disk full

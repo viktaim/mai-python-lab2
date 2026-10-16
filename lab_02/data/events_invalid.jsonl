@@ -1,0 +1,10 @@
+{"timestamp":"2026-10-06T13:00:00+00:00","level":"INFO","source":"api","message":"Valid line"}
+{not json}
+{"timestamp":"2026-10-06T13:02:00+00:00","level":"TRACE","source":"web","message":"Invalid level"}
+{"timestamp":"not-a-date","level":"ERROR","source":"db","message":"Bad timestamp"}
+{"timestamp":"2026-10-06T13:04:00+00:00","level":"INFO","source":"","message":"Empty source"}
+{"timestamp":"2026-10-06T13:05:00+00:00","source":"api","message":"Missing level"}
+{"timestamp":"2026-10-06T13:06:00+00:00","level":"ERROR","source":"db","message":"Another valid error"}
+{"timestamp":"2026-10-06T13:07:00+00:00","level":"WARNING","source":"web","message":"Valid warning"}
+{"timestamp":"2026-10-06T13:08:00+00:00","level":"INFO","source":"worker","message":"Valid unicode: тест"}
+{"timestamp":"2026-10-06T13:09:00+00:00","level":"CRITICAL","source":"auth","message":"Valid critical"}

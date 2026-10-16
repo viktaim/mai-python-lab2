@@ -1,0 +1,10 @@
+{"timestamp":"2026-10-06T12:00:00+00:00","level":"INFO","source":"api","message":"Service started"}
+{"timestamp":"2026-10-06T12:00:01+00:00","level":"DEBUG","source":"api","message":"Health check"}
+{"timestamp":"2026-10-06T12:01:00+00:00","level":"WARNING","source":"db","message":"Slow query"}
+{"timestamp":"2026-10-06T12:02:00+00:00","level":"ERROR","source":"db","message":"Connection timeout"}
+{"timestamp":"2026-10-06T12:03:00+00:00","level":"CRITICAL","source":"auth","message":"Token service unavailable"}
+{"timestamp":"2026-10-06T12:04:00+00:00","level":"INFO","source":"web","message":"GET /users 200"}
+{"timestamp":"2026-10-06T12:05:00+00:00","level":"ERROR","source":"web","message":"Unhandled exception: ValueError"}
+{"timestamp":"2026-10-06T12:06:00+00:00","level":"INFO","source":"worker","message":"Задача завершена, пользователь Иван"}
+{"timestamp":"2026-10-06T12:07:00+00:00","level":"WARNING","source":"db","message":"Replication lag 5s"}
+{"timestamp":"2026-10-06T12:08:00+00:00","level":"ERROR","source":"api","message":"Rate limit exceeded"}
