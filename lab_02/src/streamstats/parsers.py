@@ -36,9 +36,14 @@ def make_event(data):
 
 
 def parse_csv(path: Path) -> Iterator[Event]:
-    """Читает CSV файл по одной строке и отдаёт события по очереди."""
-    
+    """Читает CSV-файл по одной строке и отдаёт события по очереди."""
     with open(path, encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            yield make_event(row)
+            try:
+                event = make_event(row)
+            except InvalidEventError as exc:
+                exc.line_number = reader.line_num
+                exc.path = str(path)
+                raise
+            yield event

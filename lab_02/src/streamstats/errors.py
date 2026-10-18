@@ -7,7 +7,17 @@ class UnsupportedFormatError(StreamStatsError):
 
 
 class InvalidEventError(StreamStatsError):
-    """Событие не прошло валидацию"""
+    """Событие не прошло валидацию."""
+
+    def __init__(
+        self,
+        message: str,
+        line_number: int | None = None,
+        path: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.line_number = line_number
+        self.path = path
 
 
 class InvalidTimestampError(InvalidEventError):
