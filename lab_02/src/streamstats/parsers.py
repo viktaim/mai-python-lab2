@@ -1,4 +1,7 @@
+import csv
+from collections.abc import Iterator
 from datetime import datetime
+from pathlib import Path
 
 from streamstats.errors import *
 from streamstats.models import Event
@@ -19,7 +22,7 @@ FIELDS = ("timestamp", "level", "source", "message")
 
 def make_event(data):
     """Проверяет словарь с данными строки и собирает из него событие."""
-    
+
     for elem in FIELDS:
         if data.get(elem) is None:
             raise InvalidEventError(f"Отсутствует обязательное поле {elem!r}")
@@ -30,3 +33,12 @@ def make_event(data):
         raise InvalidEventError("Поле 'source' не должно быть пустым")
 
     return Event(timestamp=timestamp, level=data["level"], source=data["source"], message=data["message"])
+
+
+def parse_csv(path: Path) -> Iterator[Event]:
+    """Читает CSV файл по одной строке и отдаёт события по очереди."""
+    
+    with open(path, encoding="utf-8", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            yield make_event(row)
