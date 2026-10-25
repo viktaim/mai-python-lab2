@@ -1,6 +1,6 @@
 import csv
 import json
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import datetime
 from pathlib import Path
 
@@ -68,3 +68,17 @@ def parse_jsonl(path: Path) -> Iterator[Event]:
                 exc.path = str(path)
                 raise
             yield event
+
+
+PARSERS = {"csv": parse_csv, "jsonl": parse_jsonl}
+
+
+def get_parser(fmt: str) -> Callable[[Path], Iterator[Event]]:
+    """Возвращает функцию-парсер для указанного формата."""
+
+    try:
+        return PARSERS[fmt]
+    except KeyError as exc:
+        raise UnsupportedFormatError(
+            f"Неподдерживаемый формат {fmt!r}, ожидается один из: {sorted(PARSERS)}"
+        ) from exc
