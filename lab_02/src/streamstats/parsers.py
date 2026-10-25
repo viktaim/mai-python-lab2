@@ -1,4 +1,5 @@
 import csv
+import json
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +38,7 @@ def make_event(data):
 
 def parse_csv(path: Path) -> Iterator[Event]:
     """Читает CSV-файл по одной строке и отдаёт события по очереди."""
+
     with open(path, encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -44,6 +46,25 @@ def parse_csv(path: Path) -> Iterator[Event]:
                 event = make_event(row)
             except InvalidEventError as exc:
                 exc.line_number = reader.line_num
+                exc.path = str(path)
+                raise
+            yield event
+
+
+def parse_jsonl(path: Path) -> Iterator[Event]:
+    """Читает JSONL-файл по одной строке и отдаёт события по очереди."""
+
+    with open(path, encoding="utf-8") as file:
+        for number, text in enumerate(file, start=1):
+            if not text.strip():
+                continue
+            try:
+                data = json.loads(text)
+                event = make_event(data)
+            except json.JSONDecodeError as exc:
+                raise InvalidEventError(f"Повреждённый JSON: {exc.msg}", number, str(path)) from exc
+            except InvalidEventError as exc:
+                exc.line_number = number
                 exc.path = str(path)
                 raise
             yield event
