@@ -1,7 +1,7 @@
-from streamstats.models import Event, Stats
+from pathlib import Path
 
-
 from streamstats.models import Event, Stats
+from streamstats.parsers import get_parser
 
 ERROR_LEVELS = {"ERROR", "CRITICAL"}
 
@@ -19,3 +19,13 @@ def update_stats(stats: Stats, event: Event) -> None:
         stats.first_timestamp = event.timestamp
     if stats.last_timestamp is None or event.timestamp > stats.last_timestamp:
         stats.last_timestamp = event.timestamp
+
+
+def analyze(path: Path, fmt: str) -> Stats:
+    """Читает файл потоком и возвращает сводку."""
+    
+    stats = Stats()
+    parser = get_parser(fmt)
+    for event in parser(path):
+        update_stats(stats, event)
+    return stats
