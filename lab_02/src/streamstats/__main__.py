@@ -69,6 +69,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     except StreamStatsError as exc:
         print(f"Ошибка: {exc}", file=sys.stderr)
         return EXIT_ERROR
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"Ошибка чтения или записи файла: {exc}", file=sys.stderr)
+        return EXIT_ERROR
     return EXIT_OK
 
 

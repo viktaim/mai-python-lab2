@@ -22,29 +22,37 @@ def parse_timestamp(text: str) -> datetime:
 
     try:
         return datetime.fromisoformat(text)
-    except ValueError as exc:
+    except (TypeError, ValueError) as exc:
         raise InvalidTimestampError(
             f"Временная метка {text!r} не соответствует формату ISO 8601",
             field="timestamp",
         ) from exc
 
 
-def make_event(data):
+def make_event(data: object) -> Event:
     """Проверяет словарь с данными строки и собирает из него событие."""
 
+    if not isinstance(data, dict):
+        raise InvalidEventError("Строка должна быть объектом с полями события")
     for name in FIELDS:
         if data.get(name) is None:
             raise InvalidEventError(f"Отсутствует обязательное поле {name!r}", field=name)
+
     timestamp = parse_timestamp(data["timestamp"])
-    if data["level"] not in LEVELS:
+    level = data["level"]
+    if not isinstance(level, str) or level not in LEVELS:
         raise InvalidEventError(
-            f"Недопустимый уровень {data['level']!r}, ожидается один из: {sorted(LEVELS)}",
+            f"Недопустимый уровень {level!r}, ожидается один из: {sorted(LEVELS)}",
             field="level",
         )
-    if not data["source"].strip():
-        raise InvalidEventError("Поле 'source' не должно быть пустым", field="source")
+    source = data["source"]
+    if not isinstance(source, str) or not source.strip():
+        raise InvalidEventError("Поле 'source' должно быть непустой строкой", field="source")
+    message = data["message"]
+    if not isinstance(message, str):
+        raise InvalidEventError("Поле 'message' должно быть строкой", field="message")
 
-    return Event(timestamp=timestamp, level=data["level"], source=data["source"], message=data["message"])
+    return Event(timestamp=timestamp, level=level, source=source, message=message)
 
 
 def parse_csv(path: Path, on_error: ErrorHandler | None = None) -> Iterator[Event]:
