@@ -4,7 +4,11 @@ from collections.abc import Callable, Iterator
 from datetime import datetime
 from pathlib import Path
 
-from streamstats.errors import *
+from streamstats.errors import (
+    InvalidEventError,
+    InvalidTimestampError,
+    UnsupportedFormatError,
+)
 from streamstats.models import Event
 
 
