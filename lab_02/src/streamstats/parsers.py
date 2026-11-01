@@ -11,37 +11,48 @@ from streamstats.errors import (
 )
 from streamstats.models import Event
 
-
-def parse_timestamp(text: str) -> datetime:
-    """Превращает строку в дату"""
-
-    try:
-        return datetime.fromisoformat(text)
-    except ValueError as exc:
-        raise InvalidTimestampError(f"Временная метка {text!r} не соответствует формату ISO 8601") from exc
-
+ErrorHandler = Callable[[InvalidEventError], None]
 
 LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 FIELDS = ("timestamp", "level", "source", "message")
 
 
+def parse_timestamp(text: str) -> datetime:
+    """Превращает строку в дату."""
+
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise InvalidTimestampError(
+            f"Временная метка {text!r} не соответствует формату ISO 8601",
+            field="timestamp",
+        ) from exc
+
+
 def make_event(data):
     """Проверяет словарь с данными строки и собирает из него событие."""
 
-    for elem in FIELDS:
-        if data.get(elem) is None:
-            raise InvalidEventError(f"Отсутствует обязательное поле {elem!r}")
+    for name in FIELDS:
+        if data.get(name) is None:
+            raise InvalidEventError(f"Отсутствует обязательное поле {name!r}", field=name)
     timestamp = parse_timestamp(data["timestamp"])
     if data["level"] not in LEVELS:
-        raise InvalidEventError(f"Недопустимый уровень {data["level"]!r}, ожидается один из: {sorted(LEVELS)}")
+        raise InvalidEventError(
+            f"Недопустимый уровень {data['level']!r}, ожидается один из: {sorted(LEVELS)}",
+            field="level",
+        )
     if not data["source"].strip():
-        raise InvalidEventError("Поле 'source' не должно быть пустым")
+        raise InvalidEventError("Поле 'source' не должно быть пустым", field="source")
 
     return Event(timestamp=timestamp, level=data["level"], source=data["source"], message=data["message"])
 
 
-def parse_csv(path: Path) -> Iterator[Event]:
-    """Читает CSV-файл по одной строке и отдаёт события по очереди."""
+def parse_csv(path: Path, on_error: ErrorHandler | None = None) -> Iterator[Event]:
+    """Читает CSV-файл по одной строке и отдаёт события по очереди.
+
+    Если on_error не передан, первая плохая строка останавливает чтение.
+    Если передан, плохая строка отдаётся в on_error, а чтение продолжается.
+    """
 
     with open(path, encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
@@ -51,33 +62,43 @@ def parse_csv(path: Path) -> Iterator[Event]:
             except InvalidEventError as exc:
                 exc.line_number = reader.line_num
                 exc.path = str(path)
-                raise
+                if on_error is None:
+                    raise
+                on_error(exc)
+                continue
             yield event
 
 
-def parse_jsonl(path: Path) -> Iterator[Event]:
-    """Читает JSONL-файл по одной строке и отдаёт события по очереди."""
+def parse_jsonl(path: Path, on_error: ErrorHandler | None = None) -> Iterator[Event]:
+    """Читает JSONL-файл по одной строке и отдаёт события по очереди.
+
+    Правила для on_error такие же, как в parse_csv.
+    """
 
     with open(path, encoding="utf-8") as file:
         for number, text in enumerate(file, start=1):
             if not text.strip():
                 continue
             try:
-                data = json.loads(text)
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError as exc:
+                    raise InvalidEventError(f"Повреждённый JSON: {exc.msg}") from exc
                 event = make_event(data)
-            except json.JSONDecodeError as exc:
-                raise InvalidEventError(f"Повреждённый JSON: {exc.msg}", number, str(path)) from exc
             except InvalidEventError as exc:
                 exc.line_number = number
                 exc.path = str(path)
-                raise
+                if on_error is None:
+                    raise
+                on_error(exc)
+                continue
             yield event
 
 
 PARSERS = {"csv": parse_csv, "jsonl": parse_jsonl}
 
 
-def get_parser(fmt: str) -> Callable[[Path], Iterator[Event]]:
+def get_parser(fmt: str) -> Callable[[Path, ErrorHandler | None], Iterator[Event]]:
     """Возвращает функцию-парсер для указанного формата."""
 
     try:

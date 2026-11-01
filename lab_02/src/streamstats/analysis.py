@@ -1,7 +1,12 @@
+import logging
+from collections.abc import Sequence
 from pathlib import Path
 
+from streamstats.errors import InvalidEventError
 from streamstats.models import Event, Stats
 from streamstats.parsers import get_parser
+
+logger = logging.getLogger(__name__)
 
 ERROR_LEVELS = {"ERROR", "CRITICAL"}
 
@@ -21,11 +26,19 @@ def update_stats(stats: Stats, event: Event) -> None:
         stats.last_timestamp = event.timestamp
 
 
-def analyze(path: Path, fmt: str) -> Stats:
-    """Читает файл потоком и возвращает сводку."""
-    
+def analyze(paths: Sequence[Path], fmt: str, *, skip_invalid: bool = False) -> Stats:
+    """Читает файлы потоком и возвращает одну общую сводку."""
+
     stats = Stats()
     parser = get_parser(fmt)
-    for event in parser(path):
-        update_stats(stats, event)
+
+    def skip(error: InvalidEventError) -> None:
+        stats.skipped += 1
+        logger.warning("%s, строка %s: %s", error.path, error.line_number, error)
+
+    on_error = skip if skip_invalid else None
+
+    for path in paths:
+        for event in parser(path, on_error):
+            update_stats(stats, event)
     return stats
