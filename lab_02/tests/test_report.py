@@ -1,10 +1,15 @@
 import json
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from streamstats.models import Stats
-from streamstats.report import build_report, dump_report, top_error_sources, write_report
+from streamstats.report import (
+    build_report,
+    dump_report,
+    top_error_sources,
+    write_report,
+)
 
 
 def make_stats(error_sources: dict[str, int]) -> Stats:
@@ -55,8 +60,8 @@ def test_build_report_of_empty_stats_is_zero_report() -> None:
 
 def test_build_report_converts_timestamps_to_iso() -> None:
     stats = Stats(total=2)
-    stats.first_timestamp = datetime(2026, 10, 6, 10, 0, tzinfo=timezone.utc)
-    stats.last_timestamp = datetime(2026, 10, 6, 11, 0, tzinfo=timezone.utc)
+    stats.first_timestamp = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
+    stats.last_timestamp = datetime(2026, 10, 6, 11, 0, tzinfo=UTC)
 
     report = build_report(stats)
 

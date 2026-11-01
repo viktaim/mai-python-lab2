@@ -1,10 +1,9 @@
 import inspect
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-
 from streamstats.analysis import analyze, update_stats
 from streamstats.errors import InvalidEventError
 from streamstats.models import Event, Stats
@@ -14,7 +13,7 @@ CSV_HEADER = "timestamp,level,source,message\n"
 
 
 def ts(minute: int) -> datetime:
-    return datetime(2026, 10, 6, 10, minute, tzinfo=timezone.utc)
+    return datetime(2026, 10, 6, 10, minute, tzinfo=UTC)
 
 
 def iso(minute: int) -> str:
