@@ -5,7 +5,6 @@ class StreamStatsError(Exception):
 class UnsupportedFormatError(StreamStatsError):
     """Формат входного файла не поддерживается"""
 
-
 class InvalidEventError(StreamStatsError):
     """Событие не прошло валидацию."""
 
@@ -14,11 +13,12 @@ class InvalidEventError(StreamStatsError):
         message: str,
         line_number: int | None = None,
         path: str | None = None,
+        field: str | None = None,
     ) -> None:
         super().__init__(message)
         self.line_number = line_number
         self.path = path
-
+        self.field = field
 
 class InvalidTimestampError(InvalidEventError):
     """Временная метка не соответствует формату ISO 8601"""
